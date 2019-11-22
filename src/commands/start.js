@@ -1,6 +1,9 @@
 import consola from 'consola';
 import { CMD_NAME } from '../constants';
 import exec from '../util/exec';
+import { findContainers } from './list';
+import stop from './stop';
+import remove from './remove';
 
 const builder = yargs =>
   yargs
@@ -26,13 +29,37 @@ const builder = yargs =>
     });
 
 const handler = async ({ commit, env, image, project }) => {
-  await exec('docker', [
+  const meta = {
+    name: `${project}_${env}`,
+    label: `"${CMD_NAME}=${commit}"`,
+  };
+
+  const startArgs = [
     'run',
     '-d',
-    `--name=${project}_${env}_${commit}`,
-    `--label="${CMD_NAME}=${commit}"`,
+    `--name=${meta.name}`,
+    `--label=${meta.label}`,
     image,
-  ]);
+  ];
+
+  const _start = () => exec('docker', startArgs);
+
+  try {
+    await _start();
+  } catch (error) {
+    const { stderr } = error;
+    if (stderr) {
+      const namePattern = new RegExp(
+        `name "\\/${meta.name}" is already in use by container "(.*)"`,
+      );
+      if (namePattern.test(stderr)) {
+        const [container] = await findContainers({ filter: meta.label });
+        await stop.handler({ id: container.ID });
+        await remove.handler({ id: container.ID });
+        await _start();
+      }
+    }
+  }
 
   consola.success('started');
 };

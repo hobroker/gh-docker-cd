@@ -3,14 +3,7 @@
 [![License](https://img.shields.io/github/license/hobroker/github-docker-cd)](LICENSE)
 ![GitHub top language](https://img.shields.io/github/languages/top/hobroker/github-docker-cd)
 
-| Command | Description |
-| --- | --- |
-| `list [prefix]` | list the managed apps |
-| `start <image>` | start an app |
-| `stop <id>` | stop an app |
-| `ping` | ping |
-
-
+## Documentation
 ```
 ghcd <command>
 

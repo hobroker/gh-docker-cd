@@ -1,6 +1,5 @@
 import consola from 'consola';
 import execa from 'execa';
-import { handleError } from './error';
 
 /**
  * @param {String} command
@@ -17,21 +16,17 @@ const exec = async (
 ) => {
   const argsString = args.join` `;
 
-  try {
-    if (logCommand) {
-      consola.info('$', command, argsString);
-    }
-
-    const result = await execa(command, args);
-
-    if (logOutput) {
-      consola.info('>', result.stdout || result.stderr);
-    }
-
-    return result.stdout;
-  } catch (error) {
-    return handleError(error.stderr, `[exitCode=${error.exitCode}]`);
+  if (logCommand) {
+    consola.info('$', command, argsString);
   }
+
+  const result = await execa(command, args);
+
+  if (logOutput) {
+    consola.info('>', result.stdout || result.stderr);
+  }
+
+  return result.stdout;
 };
 
 export default exec;

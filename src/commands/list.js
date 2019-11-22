@@ -2,6 +2,25 @@ import consola from 'consola';
 import exec from '../util/exec';
 import { parseJsonOutput } from '../util/json';
 
+export const findContainers = async ({ filter = '' }) => {
+  const result = await exec('docker', [
+    'ps',
+    '-a',
+    '--format',
+    '{{json .}}',
+  ]).then(parseJsonOutput);
+
+  if (!filter) {
+    return result;
+  }
+
+  const filterFn = ({ ID, Image, Names, Labels }) =>
+    Labels.startsWith('"ghcd=') &&
+    [Names, Labels, ID, Image].some(item => item.includes(filter));
+
+  return result.filter(filterFn);
+};
+
 /**
  * @param yargs
  * @returns {*}
@@ -21,28 +40,14 @@ const handler = async ({ filter }) => {
     consola.info('filter=%s', filter);
   }
 
-  const result = await exec('docker', [
-    'ps',
-    '-a',
-    '--format',
-    '{{json .}}',
-  ]).then(parseJsonOutput);
+  const data = await findContainers({ filter });
 
-  const filtered = !filter
-    ? result
-    : result.filter(
-        ({ ID, Image, Names, Labels }) =>
-          Labels.startsWith('"ghcd=') &&
-          [Names, Labels, ID, Image].some(item => item.includes(filter)),
-      );
-
-  consola.success(`found ${filtered.length} container(s)`);
-  consola.success(filtered);
+  consola.success(`found ${data.length} container(s)`);
 };
 
 export default {
   command: 'list [filter]',
-  aliase: ['ls'],
+  aliases: ['ls'],
   desc: 'list the managed apps',
   builder,
   handler,
