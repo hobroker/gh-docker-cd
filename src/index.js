@@ -1,45 +1,25 @@
-/* eslint-disable no-console */
+import yargs from 'yargs';
+import { CMD_NAME, REPOSITORY } from './constants';
+import { requireDocker } from './middlewares';
+import list from './commands/list';
+import stop from './commands/stop';
+import ping from './commands/ping';
+import start from './commands/start';
+import remove from './commands/remove';
+import { handleYargsError } from './util/error';
 
-const decorator = Class => {
-  Class.thing = 'in constructor';
-};
+yargs
+  .scriptName(CMD_NAME)
+  .middleware(requireDocker)
 
-// @babel/plugin-syntax-decorators
-@decorator
-class Something {
-  // @babel/plugin-proposal-class-properties
-  thing = 'in prototype';
+  .command(list)
+  .command(stop)
+  .command(ping)
+  .command(start)
+  .command(remove)
 
-  // @babel/plugin-proposal-throw-expressions
-  constructor(weight = throw new Error('weight is required')) {
-    this.weight = weight;
-  }
-}
+  .demandCommand(1, 'I need a command to work')
 
-function printThing() {
-  console.log(this.thing);
-  console.log(this.constructor.thing);
-}
-
-const instance = new Something(11);
-
-// @babel/plugin-proposal-function-bind
-instance::printThing();
-
-// @babel/plugin-proposal-optional-chaining
-const obj = { a: { b: { c: 1 } } };
-console.log('obj.a.b = ', obj.a?.b?.c);
-console.log('obj.a.b.c.d = ', obj.a?.b?.c?.d);
-console.log('obj.a.b.c.d.e.f = ', obj.a?.b?.c?.d?.e?.f);
-
-// @babel/plugin-proposal-nullish-coalescing-operator
-console.log(null ?? 'default');
-console.log('one' ?? 'default');
-
-// @babel/plugin-proposal-export-default-from
-// export X from './X'
-
-// @babel/plugin-transform-runtime
-// run `npm run build` and check the output in /build
-
-export default Something;
+  .fail(handleYargsError)
+  .epilogue(`For more info, visit ${REPOSITORY}`)
+  .parse();
