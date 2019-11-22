@@ -67,6 +67,8 @@ const handler = async ({ commit, env, image, project }) => {
     if (stderr) {
       await tryToHandleStartError(stderr, meta);
       await _start();
+    } else {
+      throw error;
     }
   }
 
