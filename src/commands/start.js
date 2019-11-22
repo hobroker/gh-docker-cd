@@ -1,9 +1,20 @@
 import consola from 'consola';
 import { CMD_NAME } from '../constants';
 import exec from '../util/exec';
-import { findContainers } from './list';
 import stop from './stop';
 import remove from './remove';
+
+const tryToHandleStartError = async (stderr, { name }) => {
+  const namePattern = new RegExp(
+    `name "\\/${name}" is already in use by container "(.*)"`,
+  );
+  const nameConflict = namePattern.exec(stderr);
+  const id = nameConflict[1];
+  if (namePattern.exec(stderr)) {
+    await stop.handler({ id });
+    await remove.handler({ id });
+  }
+};
 
 const builder = yargs =>
   yargs
@@ -49,15 +60,8 @@ const handler = async ({ commit, env, image, project }) => {
   } catch (error) {
     const { stderr } = error;
     if (stderr) {
-      const namePattern = new RegExp(
-        `name "\\/${meta.name}" is already in use by container`,
-      );
-      if (namePattern.test(stderr)) {
-        const [container] = await findContainers({ filter: meta.label });
-        await stop.handler({ id: container.ID });
-        await remove.handler({ id: container.ID });
-        await _start();
-      }
+      await tryToHandleStartError(stderr, meta);
+      await _start();
     }
   }
 
