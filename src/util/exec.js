@@ -1,43 +1,36 @@
-import { Signale } from 'signale';
+import consola from 'consola';
 import execa from 'execa';
-
-const log = new Signale({
-  types: {
-    run: {
-      badge: '$',
-      color: 'yellow',
-      label: 'run',
-      logLevel: 'warn',
-    },
-  },
-});
-
-const handleError = (error, code = 1) => {
-  log.error(error);
-  process.exit(code);
-};
+import { handleError } from './error';
 
 /**
  * @param {String} command
  * @param {Array<String>} [args=[]]
  * @param {Boolean} [logOutput=false]
- * @returns {Promise<void | Object>}
+ * @param {Boolean} [logCommand=false]
+ * @returns {Promise<null|String>}
  */
-const exec = async (command, args = [], logOutput = false) => {
+const exec = async (
+  command,
+  args = [],
+  logOutput = false,
+  logCommand = true,
+) => {
   const argsString = args.join` `;
 
   try {
-    log.run(command, argsString);
+    if (logCommand) {
+      consola.info('$', command, argsString);
+    }
 
     const result = await execa(command, args);
 
     if (logOutput) {
-      log.info(result.stdout || result.stderr);
+      consola.info('>', result.stdout || result.stderr);
     }
 
-    return result;
+    return result.stdout;
   } catch (error) {
-    return handleError(error);
+    return handleError(error.stderr, `[exitCode=${error.exitCode}]`);
   }
 };
 

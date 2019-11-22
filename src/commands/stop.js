@@ -1,4 +1,4 @@
-import signale from 'signale';
+import consola from 'consola';
 import exec from '../util/exec';
 
 const builder = yargs =>
@@ -12,11 +12,11 @@ const builder = yargs =>
  * @param {String} id
  */
 const handler = async ({ id }) => {
-  signale.pending(`stopping container ${id}`);
+  consola.info(`stopping container ${id}`);
 
   await exec('docker', ['stop', id]);
 
-  signale.complete(`container ${id} was stopped`);
+  consola.success(`container ${id} was stopped`);
 };
 
 export default {

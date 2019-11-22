@@ -1,7 +1,7 @@
-import signale from 'signale';
+import consola from 'consola';
 
 const handler = () => {
-  signale.complete('pong');
+  consola.success('pong');
 };
 
 export default {

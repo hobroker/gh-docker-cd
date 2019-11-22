@@ -1,6 +1,6 @@
-import signale from 'signale';
-import { CMD_NAME } from '../constants';
+import consola from 'consola';
 import exec from '../util/exec';
+import { parseJsonOutput } from '../util/json';
 
 /**
  * @param yargs
@@ -18,24 +18,26 @@ const builder = yargs =>
  */
 const handler = async ({ filter }) => {
   if (filter) {
-    signale.info('filter=%s', filter);
+    consola.info('filter=%s', filter);
   }
 
   const result = await exec('docker', [
     'ps',
     '-a',
-    '--filter',
-    `label=${CMD_NAME}`,
-  ]);
+    '--format',
+    '{{json .}}',
+  ]).then(parseJsonOutput);
 
-  const filterPattern = new RegExp(filter);
-  const filtered = result.stdout.split`\n`.filter(
-    (line, index) => !index || filterPattern.test(line),
-  );
+  const filtered = !filter
+    ? result
+    : result.filter(
+        ({ ID, Image, Names, Labels }) =>
+          Labels.startsWith('"ghcd=') &&
+          [Names, Labels, ID, Image].some(item => item.includes(filter)),
+      );
 
-  const count = filtered.length - 1;
-
-  signale.complete(`found ${count} containers\n%s`, filtered.join`\n`);
+  consola.success(`found ${filtered.length} container(s)`);
+  consola.success(filtered);
 };
 
 export default {

@@ -11,24 +11,17 @@
     "dev": "node -r @babel/register src/index.js",
     "dev:watch": "nodemon --inspect=8050 src/index.js",
     "build": "babel src -d build",
-    "lint": "eslint src tests --ext .js --max-warnings 0",
-    "test": "NODE_ENV=test jest --passWithNoTests",
-    "test:coverage": "NODE_ENV=test jest --coverage --passWithNoTests"
+    "lint": "eslint src tests --ext .js --max-warnings 0"
   },
   "dependencies": {
-    "chalk": "^3.0.0",
-    "eslint-plugin-import": "^2.18.2",
+    "consola": "^2.11.0",
     "execa": "^3.3.0",
-    "signale": "^1.4.0",
     "yargs": "^15.0.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.6.4",
     "@babel/core": "^7.6.4",
     "@babel/node": "^7.6.3",
-    "@babel/plugin-proposal-export-default-from": "^7.5.2",
-    "@babel/plugin-proposal-optional-chaining": "^7.6.0",
-    "@babel/plugin-proposal-throw-expressions": "^7.2.0",
     "@babel/preset-env": "^7.6.3",
     "@babel/register": "^7.6.2",
     "babel-eslint": "^10.0.3",
@@ -37,7 +30,6 @@
     "eslint-config-prettier": "^6.5.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.1",
-    "jest": "^24.9.0",
     "lint-staged": "^9.4.2",
     "nodemon": "^2.0.1",
     "prettier": "1.19.1"
