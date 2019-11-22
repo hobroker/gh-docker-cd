@@ -8,8 +8,13 @@ const tryToHandleStartError = async (stderr, { name }) => {
   const namePattern = new RegExp(
     `name "\\/${name}" is already in use by container "(.*)"`,
   );
-  const nameConflict = namePattern.exec(stderr);
-  const id = nameConflict[1];
+
+  const [, id] = namePattern.exec(stderr);
+  if (!id) {
+    consola.error(stderr);
+    throw new Error('Tried to solve the error but could not');
+  }
+
   if (namePattern.exec(stderr)) {
     await stop.handler({ id });
     await remove.handler({ id });
@@ -45,15 +50,15 @@ const handler = async ({ commit, env, image, project }) => {
     label: `"${CMD_NAME}=${commit}"`,
   };
 
-  const startArgs = [
-    'run',
-    '-d',
-    `--name=${meta.name}`,
-    `--label=${meta.label}`,
-    image,
-  ];
-
-  const _start = () => exec('docker', startArgs);
+  const _start = () =>
+    exec('docker', [
+      'run',
+      '-d',
+      '--rm',
+      `--name=${meta.name}`,
+      `--label=${meta.label}`,
+      image,
+    ]);
 
   try {
     await _start();
