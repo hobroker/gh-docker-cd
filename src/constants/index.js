@@ -1,7 +1,5 @@
-import { repository } from '../../package';
-
 export const CMD_NAME = 'ghcd';
-export const REPOSITORY = repository;
+export const REPOSITORY = 'https://github.com/hobroker/gh-docker-cd';
 
 export const DEPLOYMENT_STATUSES = {
   SUCCESS: 'success',
