@@ -50,7 +50,7 @@ const handler = async ({ commit, env, image, project }) => {
     const { stderr } = error;
     if (stderr) {
       const namePattern = new RegExp(
-        `name "\\/${meta.name}" is already in use by container "(.*)"`,
+        `name "\\/${meta.name}" is already in use by container`,
       );
       if (namePattern.test(stderr)) {
         const [container] = await findContainers({ filter: meta.label });
