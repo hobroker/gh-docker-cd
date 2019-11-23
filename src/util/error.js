@@ -1,18 +1,26 @@
 import consola from 'consola';
 
+export const handleError = (error, exitCode = 1) => {
+  const errors = [].concat(error);
+
+  consola.fatal(...errors);
+  if (exitCode === true) {
+    process.exit(exitCode);
+  }
+};
+
 export const handleYargsError = (message, error) => {
-  error = error || message;
-
-  const code = error.exitCode || 1;
-
-  const errors = [error];
-  // add errors from execa's stdout
-  if (error.stderr) {
-    errors.unshift(error.stderr);
+  if (message) {
+    return handleError(message);
   }
 
-  consola.error(...errors);
-  process.exit(code);
+  if (!error) {
+    return null;
+  }
 
-  return null;
+  if (error.exitCode) {
+    return handleError([error.stderr, error], error.exitCode);
+  }
+
+  return handleError(error);
 };

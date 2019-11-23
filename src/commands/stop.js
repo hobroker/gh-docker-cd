@@ -1,8 +1,8 @@
 import consola from 'consola';
 import exec from '../util/exec';
 
-const builder = yargs =>
-  yargs.option('id', {
+const builder = parent =>
+  parent.option('id', {
     desc: 'container ID',
     demandCommand: true,
     string: true,
@@ -20,7 +20,8 @@ const handler = async ({ id }) => {
 };
 
 export default {
-  command: 'stop [id]',
+  command: 'stop',
+  aliases: ['down'],
   desc: 'stop an app',
   builder,
   handler,

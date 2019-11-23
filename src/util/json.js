@@ -1,3 +1,9 @@
 const parse = value => JSON.parse(value);
 
-export const parseJsonOutput = output => output.split`\n`.map(parse);
+/**
+ * @param {String} output
+ * @param {String} [splitter='\n']
+ * @returns {Array<Object>}
+ */
+export const parseJsonOutput = (output, splitter = '\n') =>
+  !output ? [] : output.split(splitter).map(parse);

@@ -2,6 +2,9 @@ import consola from 'consola';
 import exec from '../util/exec';
 import { parseJsonOutput } from '../util/json';
 
+/**
+ * @param {String} [filter]
+ */
 export const findContainers = async ({ filter = '' }) => {
   const result = await exec('docker', [
     'ps',
@@ -21,12 +24,8 @@ export const findContainers = async ({ filter = '' }) => {
   return result.filter(filterFn);
 };
 
-/**
- * @param yargs
- * @returns {*}
- */
-const builder = yargs =>
-  yargs.option('filter', {
+const builder = parent =>
+  parent.option('filter', {
     desc: 'something to search for',
     string: true,
     default: '',
@@ -40,13 +39,14 @@ const handler = async ({ filter }) => {
     consola.info('filter=%s', filter);
   }
 
-  const data = await findContainers({ filter });
+  const containers = await findContainers({ filter });
 
-  consola.success(`found ${data.length} container(s)`);
+  consola.success(`found ${containers.length} container(s)`);
+  consola.success(containers);
 };
 
 export default {
-  command: 'list [filter]',
+  command: 'list',
   aliases: ['ls'],
   desc: 'list the managed apps',
   builder,

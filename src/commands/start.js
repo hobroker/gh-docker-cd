@@ -1,8 +1,32 @@
 import consola from 'consola';
 import { CMD_NAME } from '../constants';
 import exec from '../util/exec';
-import stop from './stop';
 import remove from './remove';
+import stop from './stop';
+
+const createMeta = ({ project, env, commit }) => ({
+  name: `${project}_${env}`,
+  label: `${CMD_NAME}=${commit}`,
+});
+
+const createArgs = ({ publish }, meta) => {
+  const args = ['-d', '--rm', `--name`, meta.name, '--label', meta.label];
+
+  if (publish) {
+    args.push('--publish', publish);
+  }
+
+  return args;
+};
+
+const stopAndTryToRemoveContainer = async id => {
+  await stop.handler({ id });
+  try {
+    await remove.handler({ id });
+  } catch (error) {
+    consola.warn(error.stderr);
+  }
+};
 
 const tryToHandleStartError = async (stderr, { name }) => {
   const namePattern = new RegExp(
@@ -11,18 +35,16 @@ const tryToHandleStartError = async (stderr, { name }) => {
 
   const [, id] = namePattern.exec(stderr);
   if (!id) {
-    consola.error(stderr);
-    throw new Error('Tried to solve the error but could not');
+    throw new Error(`Tried to solve the error but could not: ${stderr}`);
   }
 
   if (namePattern.exec(stderr)) {
-    await stop.handler({ id });
-    await remove.handler({ id });
+    await stopAndTryToRemoveContainer(id);
   }
 };
 
-const builder = yargs =>
-  yargs
+const builder = parent =>
+  parent
     .option('image', {
       desc: 'the docker image name',
       string: true,
@@ -42,29 +64,27 @@ const builder = yargs =>
       desc: 'env',
       string: true,
       demandOption: true,
+    })
+    .option('publish', {
+      desc: 'publish',
+      alias: 'p',
+      string: true,
     });
 
-const handler = async ({ commit, env, image, project }) => {
-  const meta = {
-    name: `${project}_${env}`,
-    label: `"${CMD_NAME}=${commit}"`,
-  };
+const handler = async options => {
+  const { image } = options;
 
-  const _start = () =>
-    exec('docker', [
-      'run',
-      '-d',
-      '--rm',
-      `--name=${meta.name}`,
-      `--label=${meta.label}`,
-      image,
-    ]);
+  const meta = createMeta(options);
+  const args = createArgs(options, meta);
+
+  const _start = () => exec('docker', ['run', ...args, image]);
 
   try {
     await _start();
   } catch (error) {
     const { stderr } = error;
     if (stderr) {
+      consola.warn(stderr);
       await tryToHandleStartError(stderr, meta);
       await _start();
     } else {
@@ -76,7 +96,8 @@ const handler = async ({ commit, env, image, project }) => {
 };
 
 export default {
-  command: 'start <image>',
+  command: 'start',
+  aliases: ['up'],
   desc: 'start an app',
   builder,
   handler,

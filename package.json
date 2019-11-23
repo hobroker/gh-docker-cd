@@ -7,11 +7,14 @@
   "author": "Igor Leahu <igor.leahu@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node build/index.js",
+    "start": "node index.js",
     "dev": "node -r @babel/register src/index.js",
     "dev:watch": "nodemon --inspect=8050 src/index.js",
-    "build": "babel src -d build",
+    "build": "babel src -d build && chmod +x build/index.js",
     "lint": "eslint src tests --ext .js --max-warnings 0"
+  },
+  "bin": {
+    "ghcd": "build/index.js"
   },
   "dependencies": {
     "consola": "^2.11.0",
